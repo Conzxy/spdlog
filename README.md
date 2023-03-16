@@ -1,3 +1,31 @@
+# chika-log
+This is a fork from spdlog.<br>
+To make me program use spdlog more easily, I encapsulate some facility to prvide fancy features that spdlog don't provide.<br>
+* Support modify logger level to enable/disable nested spdlog LOG MACRO in runtime(spdlog don't support, I modify source code)
+* Support split sink(color or not), over a given log level, log to another target file(spdlog don't support, I modify ansicolor_sink related code)
+  * So, you can log ERROR and CRITICAL message to stderr and log others to stdout in console mode.
+* Pattern format interface more readable and easily to use.
+* Singleton logger instance and bind a default config(YOU can provide your config and setup).
+* Critical log(I prefer call it as FATAL log) will flush all message and abort entire program(In most case, this is expected I believe)
+## Usage
+```cpp
+// /example/chika_log_test.cc
+int main() {
+  LoggerConfig config;
+  config.log_dst = chika::LOG_DST_FILE | chika::LOG_DST_CONSOLE | chika::LOG_DST_COLOR;
+  setup_logger_config(config);
+  
+  CHIKA_LOG_TRACE("This is a trace");
+  CHIKA_LOG_DEBUG("This is a debug");
+  CHIKA_LOG_INFO("This is a info");
+  CHIKA_LOG_WARN("This is a warning");
+  CHIKA_LOG_ERROR("This is a error");
+  CHIKA_LOG_FATAL("This is a fatal");
+}
+```
+
+----------------------------------------------------
+
 # spdlog
 
 Very fast, header-only/compiled, C++ logging library. [![ci](https://github.com/gabime/spdlog/actions/workflows/ci.yml/badge.svg)](https://github.com/gabime/spdlog/actions/workflows/ci.yml)&nbsp; [![Build status](https://ci.appveyor.com/api/projects/status/d2jnxclg20vd0o50?svg=true&branch=v1.x)](https://ci.appveyor.com/project/gabime/spdlog) [![Release](https://img.shields.io/github/release/gabime/spdlog.svg)](https://github.com/gabime/spdlog/releases/latest)

@@ -309,7 +309,9 @@ inline void critical(const T &msg)
 #endif
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_TRACE
-#    define SPDLOG_LOGGER_TRACE(logger, ...) SPDLOG_LOGGER_CALL(logger, spdlog::level::trace, __VA_ARGS__)
+#    define SPDLOG_LOGGER_TRACE(logger, ...)  \
+      if (logger->level() <= spdlog::level::trace) \
+        SPDLOG_LOGGER_CALL(logger, spdlog::level::trace, __VA_ARGS__)
 #    define SPDLOG_TRACE(...) SPDLOG_LOGGER_TRACE(spdlog::default_logger_raw(), __VA_ARGS__)
 #else
 #    define SPDLOG_LOGGER_TRACE(logger, ...) (void)0
@@ -317,7 +319,9 @@ inline void critical(const T &msg)
 #endif
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_DEBUG
-#    define SPDLOG_LOGGER_DEBUG(logger, ...) SPDLOG_LOGGER_CALL(logger, spdlog::level::debug, __VA_ARGS__)
+#    define SPDLOG_LOGGER_DEBUG(logger, ...) \
+      if (logger->level() <= spdlog::level::debug) \
+        SPDLOG_LOGGER_CALL(logger, spdlog::level::debug, __VA_ARGS__)
 #    define SPDLOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(spdlog::default_logger_raw(), __VA_ARGS__)
 #else
 #    define SPDLOG_LOGGER_DEBUG(logger, ...) (void)0
@@ -325,7 +329,9 @@ inline void critical(const T &msg)
 #endif
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_INFO
-#    define SPDLOG_LOGGER_INFO(logger, ...) SPDLOG_LOGGER_CALL(logger, spdlog::level::info, __VA_ARGS__)
+#    define SPDLOG_LOGGER_INFO(logger, ...) \
+      if (logger->level() <= spdlog::level::info) \
+        SPDLOG_LOGGER_CALL(logger, spdlog::level::info, __VA_ARGS__)
 #    define SPDLOG_INFO(...) SPDLOG_LOGGER_INFO(spdlog::default_logger_raw(), __VA_ARGS__)
 #else
 #    define SPDLOG_LOGGER_INFO(logger, ...) (void)0

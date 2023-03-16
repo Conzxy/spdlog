@@ -13,6 +13,8 @@ endif()
 # ---------------------------------------------------------------------------------------
 add_executable(example example.cpp)
 target_link_libraries(example PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+add_executable(chika_log_test chika_log_test.cc)
+target_link_libraries(chika_log_test PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 
 # ---------------------------------------------------------------------------------------
 # Example of using header-only library

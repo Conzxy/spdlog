@@ -30,6 +30,14 @@ SPDLOG_INLINE ansicolor_sink<ConsoleMutex>::ansicolor_sink(FILE *target_file, co
     colors_[level::off] = to_string_(reset);
 }
 
+template <typename ConsoleMutex>
+SPDLOG_INLINE ansicolor_sink<ConsoleMutex>::ansicolor_sink(FILE *target1, FILE *target2, spdlog::level::level_enum split_level, color_mode mode)
+  : ansicolor_sink(target1, mode)
+{
+  target_file2_ = target2;
+  split_level_ = split_level;
+}
+
 template<typename ConsoleMutex>
 SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::set_color(level::level_enum color_level, string_view_t color)
 {
@@ -47,22 +55,25 @@ SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::log(const details::log_msg &msg
     msg.color_range_end = 0;
     memory_buf_t formatted;
     formatter_->format(msg, formatted);
+    FILE *target = target_file_;
+    if (target_file2_ && msg.level >= split_level_)
+      target = target_file2_;
     if (should_do_colors_ && msg.color_range_end > msg.color_range_start)
     {
         // before color range
-        print_range_(formatted, 0, msg.color_range_start);
+        print_range_(target, formatted, 0, msg.color_range_start);
         // in color range
-        print_ccode_(colors_[static_cast<size_t>(msg.level)]);
+        print_ccode_(target, colors_[static_cast<size_t>(msg.level)]);
         print_range_(formatted, msg.color_range_start, msg.color_range_end);
-        print_ccode_(reset);
+        print_ccode_(target, reset);
         // after color range
-        print_range_(formatted, msg.color_range_end, formatted.size());
+        print_range_(target, formatted, msg.color_range_end, formatted.size());
     }
     else // no color
     {
-        print_range_(formatted, 0, formatted.size());
+        print_range_(target, formatted, 0, formatted.size());
     }
-    fflush(target_file_);
+    fflush(target);
 }
 
 template<typename ConsoleMutex>
@@ -70,6 +81,8 @@ SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::flush()
 {
     std::lock_guard<mutex_t> lock(mutex_);
     fflush(target_file_);
+    if (target_file2_)
+      fflush(target_file2_);
 }
 
 template<typename ConsoleMutex>
@@ -112,15 +125,15 @@ SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::set_color_mode(color_mode mode)
 }
 
 template<typename ConsoleMutex>
-SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::print_ccode_(const string_view_t &color_code)
+SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::print_ccode_(FILE *target, const string_view_t &color_code)
 {
-    fwrite(color_code.data(), sizeof(char), color_code.size(), target_file_);
+    fwrite(color_code.data(), sizeof(char), color_code.size(), target);
 }
 
 template<typename ConsoleMutex>
-SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::print_range_(const memory_buf_t &formatted, size_t start, size_t end)
+SPDLOG_INLINE void ansicolor_sink<ConsoleMutex>::print_range_(FILE *target, const memory_buf_t &formatted, size_t start, size_t end)
 {
-    fwrite(formatted.data() + start, sizeof(char), end - start, target_file_);
+    fwrite(formatted.data() + start, sizeof(char), end - start, target);
 }
 
 template<typename ConsoleMutex>

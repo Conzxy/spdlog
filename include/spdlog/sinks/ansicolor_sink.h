@@ -26,6 +26,8 @@ class ansicolor_sink : public sink
 {
 public:
     using mutex_t = typename ConsoleMutex::mutex_t;
+    ansicolor_sink(FILE *target1, FILE *target2, spdlog::level::level_enum split_level, color_mode mode=color_mode::automatic);
+
     ansicolor_sink(FILE *target_file, color_mode mode);
     ~ansicolor_sink() override = default;
 
@@ -81,12 +83,23 @@ public:
 
 private:
     FILE *target_file_;
+    FILE *target_file2_ = nullptr;
+    spdlog::level::level_enum split_level_;
     mutex_t &mutex_;
     bool should_do_colors_;
     std::unique_ptr<spdlog::formatter> formatter_;
     std::array<std::string, level::n_levels> colors_;
-    void print_ccode_(const string_view_t &color_code);
-    void print_range_(const memory_buf_t &formatted, size_t start, size_t end);
+    void print_ccode_(FILE *target, const string_view_t &color_code);
+    void print_range_(FILE *target, const memory_buf_t &formatted, size_t start, size_t end);
+    void print_ccode_(const string_view_t &color_code)
+    {
+      print_ccode_(target_file_, color_code);
+    }
+
+    void print_range_(const memory_buf_t &formatted, size_t start, size_t end)
+    {
+      print_range_(target_file_, formatted, start, end);
+    }
     static std::string to_string_(const string_view_t &sv);
 };
 
